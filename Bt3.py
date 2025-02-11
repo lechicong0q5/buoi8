@@ -1,5 +1,7 @@
 import customtkinter as ctk
 from tkinter import Canvas, Scrollbar
+import threading
+import time
 
 
 app = ctk.CTk()
@@ -25,13 +27,29 @@ inner_frame = ctk.CTkFrame(canvas)
 canvas.create_window((0, 0), window=inner_frame, anchor="nw")
 
 
-for i in range(1000):
-    button = ctk.CTkButton(inner_frame, text=f"Button {i+1}")
-    button.pack(pady=2)
+buttons = []
 
 
-inner_frame.update_idletasks()
-canvas.config(scrollregion=canvas.bbox("all"))
+num_buttons = 1000
+batch_size = 50
+interval = 5
+
+
+def create_buttons(start, end):
+    for i in range(start, end):
+        button = ctk.CTkButton(inner_frame, text=f"Button {i+1}")
+        button.pack(pady=2)
+        buttons.append(button)
+    
+
+    inner_frame.update_idletasks()
+    canvas.config(scrollregion=canvas.bbox("all"))
+    
+
+    if end < num_buttons:
+        app.after(interval * 1000, create_buttons, end, min(end + batch_size, num_buttons))
+
+create_buttons(0, batch_size)
 
 
 app.mainloop()
